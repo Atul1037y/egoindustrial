@@ -1,0 +1,23 @@
+# @package _global_
+defaults:
+  - /model: videomaev2
+  - /dataset: mixture
+  - _self_
+
+max_epochs: 50
+gradient_clip: 1.0
+accumulate_grad_batches: 1
+
+optimizer:
+  lr: 1e-4
+  weight_decay: 0.05
+
+scheduler:
+  warmup_epochs: 5
+  max_epochs: 50
+
+loss:
+  verb_weight: 1.0
+  noun_weight: 1.0
+  action_weight: 1.0
+  label_smoothing: 0.1

@@ -1,0 +1,25 @@
+# @package _global_
+defaults:
+  - /train/default
+  - _self_
+
+max_epochs: 100
+dataset:
+  name: mixture
+  datasets:
+    epic_kitchens:
+      split: train
+    assembly101:
+      split: train
+    holoassist:
+      split: train
+
+model:
+  freeze_backbone: false
+
+optimizer:
+  lr: 5e-5
+
+scheduler:
+  warmup_epochs: 10
+  max_epochs: 100
