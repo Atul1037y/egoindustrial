@@ -18,9 +18,20 @@ jobs:
           python-version: "3.11"
           cache: "pip"
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libglib2.0-0 libsm6 libxext6 libxrender-dev libgl1 \
+            ffmpeg libavcodec-extra
+
       - name: Install dependencies
         run: |
           pip install -e ".[dev]"
+
+      - name: Verify package import
+        run: |
+          python -c "import egoindustrial.data; import egoindustrial.models; import egoindustrial.training; import egoindustrial.inference; print('All imports OK')"
 
       - name: Run tests
         run: |
