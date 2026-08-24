@@ -31,6 +31,7 @@ jobs:
           pip install -e ".[dev]"
           pip install pandas-stubs types-PyYAML types-tqdm types-psutil || true
           pre-commit install
+          pip list | grep egoindustrial
 
       - name: Verify package import
         run: |
