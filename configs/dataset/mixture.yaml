@@ -1,0 +1,34 @@
+# @package _global_
+defaults:
+  - /dataset/transforms: videomae
+  - _self_
+
+name: mixture
+datasets:
+  epic_kitchens:
+    _target_: egoindustrial.data.epic_kitchens.EpicKitchensDataset
+    root: ${paths.data_root}/epic_kitchens
+    split: train
+    clip_len: 16
+    frame_stride: 2
+    use_action_labels: true
+  assembly101:
+    _target_: egoindustrial.data.assembly101.Assembly101Dataset
+    root: ${paths.data_root}/assembly101
+    split: train
+    clip_len: 16
+    frame_stride: 2
+  holoassist:
+    _target_: egoindustrial.data.holoassist.HoloAssistDataset
+    root: ${paths.data_root}/holoassist
+    split: train
+    clip_len: 16
+    frame_stride: 2
+
+# Domain mixing ratios (normalized to sum=1.0)
+domain_probs: [0.5, 0.3, 0.2]  # epic, assembly, holoassist
+
+batch_size: 32
+num_workers: 8
+pin_memory: true
+drop_last: true

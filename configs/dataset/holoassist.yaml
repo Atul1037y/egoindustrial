@@ -1,0 +1,13 @@
+# @package _global_
+defaults:
+  - /dataset/transforms: videomae
+  - _self_
+
+name: holoassist
+root: ${paths.data_root}/holoassist
+split: train
+clip_len: 16
+frame_stride: 2
+batch_size: 32
+num_workers: 8
+domain_weight: 1.0

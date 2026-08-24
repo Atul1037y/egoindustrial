@@ -1,0 +1,7 @@
+# @package _global_
+_target_: egoindustrial.data.transforms.VideoTransforms
+clip_len: 16
+crop_size: 224
+resize_size: 256
+is_train: true
+model_type: videomae
