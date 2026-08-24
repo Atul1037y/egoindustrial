@@ -32,45 +32,50 @@ class VideoTransforms:
     def _build_spatial_transform(self) -> A.Compose:
         if self.is_train:
             if self.model_type in ("videomae", "mvit"):
-                return A.Compose([
+                return A.Compose(
+                    [
+                        A.SmallestMaxSize(max_size=self.resize_size, p=1.0),
+                        A.RandomCrop(height=self.crop_size, width=self.crop_size, p=1.0),
+                        A.HorizontalFlip(p=0.5),
+                        A.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1, p=0.8),
+                        A.GaussNoise(var_limit=(10, 50), p=0.3),
+                        A.GaussianBlur(blur_limit=3, p=0.3),
+                        A.Normalize(
+                            mean=[0.485, 0.456, 0.406],
+                            std=[0.229, 0.224, 0.225],
+                        ),
+                        ToTensorV2(),
+                    ],
+                    additional_targets={f"image{i}": "image" for i in range(self.clip_len)},
+                )
+            elif self.model_type == "slowfast":
+                return A.Compose(
+                    [
+                        A.SmallestMaxSize(max_size=self.resize_size, p=1.0),
+                        A.RandomCrop(height=self.crop_size, width=self.crop_size, p=1.0),
+                        A.HorizontalFlip(p=0.5),
+                        A.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1, p=0.8),
+                        A.Normalize(
+                            mean=[0.45, 0.45, 0.45],
+                            std=[0.225, 0.225, 0.225],
+                        ),
+                        ToTensorV2(),
+                    ],
+                    additional_targets={f"image{i}": "image" for i in range(self.clip_len)},
+                )
+        else:
+            return A.Compose(
+                [
                     A.SmallestMaxSize(max_size=self.resize_size, p=1.0),
-                    A.RandomCrop(height=self.crop_size, width=self.crop_size, p=1.0),
-                    A.HorizontalFlip(p=0.5),
-                    A.ColorJitter(
-                        brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1, p=0.8
-                    ),
-                    A.GaussNoise(var_limit=(10, 50), p=0.3),
-                    A.GaussianBlur(blur_limit=3, p=0.3),
+                    A.CenterCrop(height=self.crop_size, width=self.crop_size, p=1.0),
                     A.Normalize(
                         mean=[0.485, 0.456, 0.406],
                         std=[0.229, 0.224, 0.225],
                     ),
                     ToTensorV2(),
-                ], additional_targets={f"image{i}": "image" for i in range(self.clip_len)})
-            elif self.model_type == "slowfast":
-                return A.Compose([
-                    A.SmallestMaxSize(max_size=self.resize_size, p=1.0),
-                    A.RandomCrop(height=self.crop_size, width=self.crop_size, p=1.0),
-                    A.HorizontalFlip(p=0.5),
-                    A.ColorJitter(
-                        brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1, p=0.8
-                    ),
-                    A.Normalize(
-                        mean=[0.45, 0.45, 0.45],
-                        std=[0.225, 0.225, 0.225],
-                    ),
-                    ToTensorV2(),
-                ], additional_targets={f"image{i}": "image" for i in range(self.clip_len)})
-        else:
-            return A.Compose([
-                A.SmallestMaxSize(max_size=self.resize_size, p=1.0),
-                A.CenterCrop(height=self.crop_size, width=self.crop_size, p=1.0),
-                A.Normalize(
-                    mean=[0.485, 0.456, 0.406],
-                    std=[0.229, 0.224, 0.225],
-                ),
-                ToTensorV2(),
-            ], additional_targets={f"image{i}": "image" for i in range(self.clip_len)})
+                ],
+                additional_targets={f"image{i}": "image" for i in range(self.clip_len)},
+            )
 
     def _build_temporal_transform(self):
         if self.is_train:
@@ -103,8 +108,7 @@ class VideoTransforms:
             out_frames = out_frames.permute(1, 0, 2, 3)  # [C, T, H, W]
             fast_pathway = out_frames
             slow_pathway = torch.index_select(
-                fast_pathway, 1,
-                torch.linspace(0, self.clip_len - 1, self.clip_len // 4).long()
+                fast_pathway, 1, torch.linspace(0, self.clip_len - 1, self.clip_len // 4).long()
             )
             return [slow_pathway, fast_pathway]
 
@@ -122,7 +126,7 @@ class TemporalRandomCrop:
         if T <= self.clip_len:
             return frames
         start = random.randint(0, T - self.clip_len)
-        return frames[start:start + self.clip_len]
+        return frames[start : start + self.clip_len]
 
 
 class TemporalCenterCrop:
@@ -136,7 +140,7 @@ class TemporalCenterCrop:
         if T <= self.clip_len:
             return frames
         start = (T - self.clip_len) // 2
-        return frames[start:start + self.clip_len]
+        return frames[start : start + self.clip_len]
 
 
 def get_transforms(cfg: dict[str, Any]) -> VideoTransforms:

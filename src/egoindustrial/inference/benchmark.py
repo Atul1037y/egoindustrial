@@ -236,7 +236,7 @@ def compare_accuracy(
 
         if isinstance(torch_out, dict):
             torch_out = [torch_out["verb"], torch_out["noun"], torch_out["action"]]
-        elif not isinstance(torch_out, (list, tuple)):
+        elif not isinstance(torch_out, list | tuple):
             torch_out = [torch_out]
 
         for j, (t, o) in enumerate(zip(torch_out, ort_outs)):

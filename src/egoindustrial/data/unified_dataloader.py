@@ -51,9 +51,7 @@ class DomainAwareSampler(Sampler):
             batch_indices = []
             for _ in range(self.batch_size):
                 # Sample domain based on probabilities
-                domain = torch.multinomial(
-                    torch.tensor(self.domain_probs), 1
-                ).item()
+                domain = torch.multinomial(torch.tensor(self.domain_probs), 1).item()
 
                 if domain_pointers[domain] >= self.dataset_sizes[domain]:
                     # Reshuffle if exhausted

@@ -21,4 +21,3 @@ loss:
   verb_weight: 1.0
   noun_weight: 1.0
   action_weight: 2.0
-  

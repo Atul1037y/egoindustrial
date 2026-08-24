@@ -5,4 +5,3 @@ crop_size: 224
 resize_size: 256
 is_train: true
 model_type: mvit
-
