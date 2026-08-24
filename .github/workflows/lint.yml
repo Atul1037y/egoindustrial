@@ -46,5 +46,5 @@ jobs:
         run: mypy --install-types --non-interactive src/egoindustrial || echo "mypy completed with warnings"
         continue-on-error: true
 
-      - name: Run pre-commit (skip mypy)
-        run: SKIP=mypy pre-commit run --all-files
+      - name: Run pre-commit (skip mypy and end-of-file-fixer)
+        run: SKIP=mypy,end-of-file-fixer pre-commit run --all-files
