@@ -181,6 +181,7 @@ class HealthChecker:
         try:
             # Quick inference test
             import numpy as np
+
             dummy = np.random.randn(1, 3, 16, 224, 224).astype(np.float32)
             _ = self.engine.infer(dummy)
             return {"status": "healthy", "message": "Engine responsive"}
@@ -282,6 +283,7 @@ def create_health_endpoint(app, engine=None, batcher=None):
         health = checker.check_health()
         if health["status"] == "unhealthy":
             from fastapi import HTTPException
+
             raise HTTPException(503, detail=health)
         return {"status": "ready"}
 

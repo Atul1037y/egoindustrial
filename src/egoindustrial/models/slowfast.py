@@ -1,11 +1,11 @@
 """SlowFast model wrapper."""
 
-
 import torch
 import torch.nn as nn
 
 try:
     from pytorchvideo.models.slowfast import create_slowfast
+
     HAS_PYTORCHVIDEO = True
 except ImportError:
     HAS_PYTORCHVIDEO = False
@@ -28,7 +28,7 @@ class SlowFast(nn.Module):
         dropout: float = 0.5,
         freeze_backbone: bool = False,
         slowfast_alpha: int = 4,
-        slowfast_beta: float = 1/8,
+        slowfast_beta: float = 1 / 8,
     ):
         super().__init__()
         self.slowfast_alpha = slowfast_alpha

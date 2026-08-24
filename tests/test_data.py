@@ -38,6 +38,7 @@ def test_imports():
 
     # TensorRTEngine is optional (requires tensorrt)
     from egoindustrial.inference import TensorRTEngine
+
     if TensorRTEngine is not None:
         assert TensorRTEngine is not None
 
@@ -53,7 +54,13 @@ def test_model_registry():
     assert "internvideo2" in models
 
     # Test getting a model
-    model = get_model("videomaev2", num_verb_classes=10, num_noun_classes=20, num_action_classes=30, pretrained=False)
+    model = get_model(
+        "videomaev2",
+        num_verb_classes=10,
+        num_noun_classes=20,
+        num_action_classes=30,
+        pretrained=False,
+    )
     assert model is not None
 
 

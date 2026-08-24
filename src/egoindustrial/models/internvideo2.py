@@ -5,6 +5,7 @@ import torch.nn as nn
 
 try:
     from transformers import AutoModel
+
     HAS_TRANSFORMERS = True
 except ImportError:
     HAS_TRANSFORMERS = False

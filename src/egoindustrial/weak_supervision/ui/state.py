@@ -60,10 +60,7 @@ class SessionState:
         df = self.labels_df.copy()
 
         # Confidence filter
-        df = df[
-            (df["verb_confidence"] >= min_conf) &
-            (df["noun_confidence"] >= min_conf)
-        ]
+        df = df[(df["verb_confidence"] >= min_conf) & (df["noun_confidence"] >= min_conf)]
 
         # Class filters
         if verb_filter != "All":

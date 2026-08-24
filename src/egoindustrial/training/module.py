@@ -68,9 +68,12 @@ class EgoIndustrialModule(LightningModule):
 
         # Update metrics
         self.train_metrics.update(
-            preds["verb"], batch["verb_label"],
-            preds["noun"], batch["noun_label"],
-            preds["action"], batch["action_label"],
+            preds["verb"],
+            batch["verb_label"],
+            preds["noun"],
+            batch["noun_label"],
+            preds["action"],
+            batch["action_label"],
         )
 
         return losses["total"]
@@ -89,9 +92,12 @@ class EgoIndustrialModule(LightningModule):
             self.log(f"val/loss_{k}", v, prog_bar=k == "total", sync_dist=True)
 
         self.val_metrics.update(
-            preds["verb"], batch["verb_label"],
-            preds["noun"], batch["noun_label"],
-            preds["action"], batch["action_label"],
+            preds["verb"],
+            batch["verb_label"],
+            preds["noun"],
+            batch["noun_label"],
+            preds["action"],
+            batch["action_label"],
         )
 
     def on_validation_epoch_end(self):

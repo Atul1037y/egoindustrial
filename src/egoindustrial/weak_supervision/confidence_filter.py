@@ -10,6 +10,7 @@ import pandas as pd
 @dataclass
 class FilterConfig:
     """Configuration for confidence filtering."""
+
     verb_conf_threshold: float = 0.9
     noun_conf_threshold: float = 0.9
     action_conf_threshold: float = 0.8
@@ -32,9 +33,9 @@ def filter_by_confidence(
 ) -> pd.DataFrame:
     """Filter pseudo-labels by confidence thresholds."""
     mask = (
-        (df["verb_confidence"] >= config.verb_conf_threshold) &
-        (df["noun_confidence"] >= config.noun_conf_threshold) &
-        (df["action_confidence"] >= config.action_conf_threshold)
+        (df["verb_confidence"] >= config.verb_conf_threshold)
+        & (df["noun_confidence"] >= config.noun_conf_threshold)
+        & (df["action_confidence"] >= config.action_conf_threshold)
     )
     return df[mask].copy()
 
@@ -53,9 +54,8 @@ def filter_by_entropy(
     verb_entropy = df[verb_probs_col].apply(lambda x: compute_entropy(np.array(x)))
     noun_entropy = df[noun_probs_col].apply(lambda x: compute_entropy(np.array(x)))
 
-    mask = (
-        (verb_entropy <= config.verb_entropy_threshold) &
-        (noun_entropy <= config.noun_entropy_threshold)
+    mask = (verb_entropy <= config.verb_entropy_threshold) & (
+        noun_entropy <= config.noun_entropy_threshold
     )
     return df[mask].copy()
 
@@ -67,9 +67,8 @@ def filter_by_duration(
     """Filter by segment duration."""
     df = df.copy()
     df["duration"] = df["end_frame"] - df["start_frame"]
-    mask = (
-        (df["duration"] >= config.min_duration_frames) &
-        (df["duration"] <= config.max_duration_frames)
+    mask = (df["duration"] >= config.min_duration_frames) & (
+        df["duration"] <= config.max_duration_frames
     )
     return df[mask]
 

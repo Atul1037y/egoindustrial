@@ -130,11 +130,15 @@ def get_model_info(onnx_path: str) -> dict[str, Any]:
     }
 
     for inp in model.graph.input:
-        shape = [d.dim_value if d.dim_value > 0 else "dynamic" for d in inp.type.tensor_type.shape.dim]
+        shape = [
+            d.dim_value if d.dim_value > 0 else "dynamic" for d in inp.type.tensor_type.shape.dim
+        ]
         info["inputs"].append({"name": inp.name, "shape": shape})
 
     for out in model.graph.output:
-        shape = [d.dim_value if d.dim_value > 0 else "dynamic" for d in out.type.tensor_type.shape.dim]
+        shape = [
+            d.dim_value if d.dim_value > 0 else "dynamic" for d in out.type.tensor_type.shape.dim
+        ]
         info["outputs"].append({"name": out.name, "shape": shape})
 
     return info

@@ -24,7 +24,7 @@ def video_player(row: pd.Series) -> None:
             width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             out = cv2.VideoWriter(tmp.name, fourcc, fps, (width, height))
 
             start = int(row["start_frame"])
@@ -39,12 +39,20 @@ def video_player(row: pd.Series) -> None:
                 cv2.putText(
                     frame,
                     f"{row['verb_class']} + {row['noun_class']}",
-                    (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2
+                    (10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1,
+                    (0, 255, 0),
+                    2,
                 )
                 cv2.putText(
                     frame,
                     f"Conf: {row['verb_confidence']:.2f} / {row['noun_confidence']:.2f}",
-                    (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2
+                    (10, 70),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.7,
+                    (0, 255, 0),
+                    2,
                 )
                 out.write(frame)
 
@@ -65,7 +73,9 @@ def label_editor(state, idx: int, row: pd.Series) -> None:
 
     # Current prediction
     st.write(f"**Predicted:** {row['verb_class']} + {row['noun_class']}")
-    st.write(f"**Confidence:** Verb: {row['verb_confidence']:.2f} | Noun: {row['noun_confidence']:.2f}")
+    st.write(
+        f"**Confidence:** Verb: {row['verb_confidence']:.2f} | Noun: {row['noun_confidence']:.2f}"
+    )
 
     # Verification status
     verified = state.is_verified(idx)

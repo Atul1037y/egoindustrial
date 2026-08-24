@@ -42,7 +42,11 @@ class BenchmarkRunner:
         # Warmup
         with torch.no_grad():
             for _ in range(self.warmup):
-                _ = self.model(*inputs_torch) if len(inputs_torch) > 1 else self.model(inputs_torch[0])
+                _ = (
+                    self.model(*inputs_torch)
+                    if len(inputs_torch) > 1
+                    else self.model(inputs_torch[0])
+                )
                 torch.cuda.synchronize()
 
         # Benchmark
@@ -50,7 +54,11 @@ class BenchmarkRunner:
         with torch.no_grad():
             for _ in range(self.runs):
                 start = time.perf_counter()
-                _ = self.model(*inputs_torch) if len(inputs_torch) > 1 else self.model(inputs_torch[0])
+                _ = (
+                    self.model(*inputs_torch)
+                    if len(inputs_torch) > 1
+                    else self.model(inputs_torch[0])
+                )
                 torch.cuda.synchronize()
                 times.append((time.perf_counter() - start) * 1000)
 
@@ -150,7 +158,9 @@ def run_full_benchmark(
     if pytorch_model is not None:
         print("Benchmarking PyTorch...")
         results["pytorch"] = runner.benchmark_pytorch()
-        print(f"  PyTorch: {results['pytorch']['mean_ms']:.2f} ms, {results['pytorch']['fps']:.1f} FPS")
+        print(
+            f"  PyTorch: {results['pytorch']['mean_ms']:.2f} ms, {results['pytorch']['fps']:.1f} FPS"
+        )
 
     if onnx_path:
         print("Benchmarking ONNX Runtime...")
@@ -160,7 +170,9 @@ def run_full_benchmark(
     if engine_path:
         print("Benchmarking TensorRT...")
         results["tensorrt"] = runner.benchmark_tensorrt(engine_path)
-        print(f"  TensorRT: {results['tensorrt']['mean_ms']:.2f} ms, {results['tensorrt']['fps']:.1f} FPS")
+        print(
+            f"  TensorRT: {results['tensorrt']['mean_ms']:.2f} ms, {results['tensorrt']['fps']:.1f} FPS"
+        )
 
     if output_json:
         with open(output_json, "w") as f:
@@ -214,7 +226,11 @@ def compare_accuracy(
         ort_inputs = {session.get_inputs()[j].name: t.numpy() for j, t in enumerate(torch_inputs)}
 
         with torch.no_grad():
-            torch_out = pytorch_model(*torch_inputs) if len(torch_inputs) > 1 else pytorch_model(torch_inputs[0])
+            torch_out = (
+                pytorch_model(*torch_inputs)
+                if len(torch_inputs) > 1
+                else pytorch_model(torch_inputs[0])
+            )
 
         ort_outs = session.run(None, ort_inputs)
 
@@ -230,7 +246,11 @@ def compare_accuracy(
             close = np.allclose(t_np, o, rtol=rtol, atol=atol)
 
             key = f"output_{j}_run_{i}"
-            results[key] = {"max_diff": float(max_diff), "mean_diff": float(mean_diff), "close": bool(close)}
+            results[key] = {
+                "max_diff": float(max_diff),
+                "mean_diff": float(mean_diff),
+                "close": bool(close),
+            }
 
     all_close = all(r["close"] for r in results.values())
     results["summary"] = {"all_close": all_close}
@@ -258,6 +278,7 @@ if __name__ == "__main__":
     pytorch_model = None
     if args.pytorch_ckpt:
         from egoindustrial.training.module import EgoIndustrialModule
+
         pytorch_model = EgoIndustrialModule.load_from_checkpoint(args.pytorch_ckpt)
 
     all_results = {}

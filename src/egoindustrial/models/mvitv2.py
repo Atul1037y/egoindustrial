@@ -5,6 +5,7 @@ import torch.nn as nn
 
 try:
     from timm.models.mvit import mvit_base_16x4
+
     HAS_TIMM_MVIT = True
 except ImportError:
     HAS_TIMM_MVIT = False

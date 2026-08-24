@@ -24,9 +24,7 @@ class EMAModelCallback(Callback):
         with torch.no_grad():
             for name, param in pl_module.named_parameters():
                 if param.requires_grad and name in self.ema_weights:
-                    self.ema_weights[name].mul_(self.decay).add_(
-                        param.data, alpha=1 - self.decay
-                    )
+                    self.ema_weights[name].mul_(self.decay).add_(param.data, alpha=1 - self.decay)
 
     @rank_zero_only
     def on_validation_start(self, trainer, pl_module):

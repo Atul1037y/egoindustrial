@@ -5,6 +5,7 @@ import torch.nn as nn
 
 try:
     import timm
+
     HAS_TIMM = True
 except ImportError:
     HAS_TIMM = False
@@ -33,9 +34,7 @@ class VideoMAEv2(nn.Module):
         self.num_action_classes = num_action_classes
 
         if not HAS_TIMM:
-            raise ImportError(
-                "VideoMAEv2 requires timm. Install with: pip install timm"
-            )
+            raise ImportError("VideoMAEv2 requires timm. Install with: pip install timm")
 
         # Use ViT-B/16 from timm as backbone (VideoMAE uses ViT architecture)
         self.backbone = timm.create_model(

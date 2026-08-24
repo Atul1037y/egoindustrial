@@ -85,7 +85,7 @@ class PseudoLabeler:
                 if len(frame_buffer) >= self.min_frames:
                     if len(frame_buffer) == self.min_frames or frame_idx % self.stride == 0:
                         # Convert to tensor
-                        clip = np.stack(frame_buffer[-self.min_frames:])
+                        clip = np.stack(frame_buffer[-self.min_frames :])
                         clip_tensor = torch.from_numpy(clip).permute(3, 0, 1, 2).float() / 255.0
                         clip_tensor = self.transforms(clip_tensor)
 
@@ -94,32 +94,40 @@ class PseudoLabeler:
 
                         verb_probs = torch.softmax(torch.from_numpy(outputs[0][0]), dim=-1).numpy()
                         noun_probs = torch.softmax(torch.from_numpy(outputs[1][0]), dim=-1).numpy()
-                        action_probs = torch.softmax(torch.from_numpy(outputs[2][0]), dim=-1).numpy()
+                        action_probs = torch.softmax(
+                            torch.from_numpy(outputs[2][0]), dim=-1
+                        ).numpy()
 
                         if self._passes_filters(verb_probs, noun_probs):
                             verb_idx = verb_probs.argmax()
                             noun_idx = noun_probs.argmax()
                             action_idx = action_probs.argmax()
 
-                            pseudo_labels.append({
-                                "video_path": video_path,
-                                "start_frame": frame_idx - self.min_frames + 1,
-                                "end_frame": frame_idx,
-                                "start_time": (frame_idx - self.min_frames + 1) / fps,
-                                "end_time": frame_idx / fps,
-                                "verb_label": int(verb_idx),
-                                "verb_class": self.verb_classes[verb_idx] if verb_idx < len(self.verb_classes) else str(verb_idx),
-                                "verb_confidence": float(verb_probs[verb_idx]),
-                                "noun_label": int(noun_idx),
-                                "noun_class": self.noun_classes[noun_idx] if noun_idx < len(self.noun_classes) else str(noun_idx),
-                                "noun_confidence": float(noun_probs[noun_idx]),
-                                "action_label": int(action_idx),
-                                "action_confidence": float(action_probs[action_idx]),
-                            })
+                            pseudo_labels.append(
+                                {
+                                    "video_path": video_path,
+                                    "start_frame": frame_idx - self.min_frames + 1,
+                                    "end_frame": frame_idx,
+                                    "start_time": (frame_idx - self.min_frames + 1) / fps,
+                                    "end_time": frame_idx / fps,
+                                    "verb_label": int(verb_idx),
+                                    "verb_class": self.verb_classes[verb_idx]
+                                    if verb_idx < len(self.verb_classes)
+                                    else str(verb_idx),
+                                    "verb_confidence": float(verb_probs[verb_idx]),
+                                    "noun_label": int(noun_idx),
+                                    "noun_class": self.noun_classes[noun_idx]
+                                    if noun_idx < len(self.noun_classes)
+                                    else str(noun_idx),
+                                    "noun_confidence": float(noun_probs[noun_idx]),
+                                    "action_label": int(action_idx),
+                                    "action_confidence": float(action_probs[action_idx]),
+                                }
+                            )
 
                     # Slide window
                     if len(frame_buffer) > self.min_frames:
-                        frame_buffer = frame_buffer[-(self.min_frames - 1):]
+                        frame_buffer = frame_buffer[-(self.min_frames - 1) :]
 
                 frame_idx += 1
                 pbar.update(1)
@@ -129,6 +137,7 @@ class PseudoLabeler:
         # Save
         output_path = Path(output_dir) / f"{Path(video_path).stem}_pseudo.csv"
         import pandas as pd
+
         df = pd.DataFrame(pseudo_labels)
         df.to_csv(output_path, index=False)
         print(f"Saved {len(pseudo_labels)} pseudo-labels to {output_path}")
@@ -158,6 +167,7 @@ class PseudoLabeler:
 
         # Combined CSV
         import pandas as pd
+
         combined_df = pd.DataFrame(all_labels)
         combined_path = output_path / "all_pseudo_labels.csv"
         combined_df.to_csv(combined_path, index=False)

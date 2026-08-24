@@ -67,9 +67,7 @@ class DynamicBatcher:
 
             # Collect first request
             try:
-                req_id, request = await asyncio.wait_for(
-                    self.queue.get(), timeout=self.max_wait_ms
-                )
+                req_id, request = await asyncio.wait_for(self.queue.get(), timeout=self.max_wait_ms)
                 batch.append(request)
                 batch_ids.append(req_id)
             except asyncio.TimeoutError:
@@ -120,7 +118,9 @@ class DynamicBatcher:
                     response = InferenceResponse(
                         verb_probs=torch.softmax(torch.from_numpy(verb_logits), dim=-1).tolist(),
                         noun_probs=torch.softmax(torch.from_numpy(noun_logits), dim=-1).tolist(),
-                        action_probs=torch.softmax(torch.from_numpy(action_logits), dim=-1).tolist(),
+                        action_probs=torch.softmax(
+                            torch.from_numpy(action_logits), dim=-1
+                        ).tolist(),
                         latency_ms=(time.time() - start_time) * 1000 / len(requests),
                     )
                     self.results[req_id].set_result(response)
@@ -202,6 +202,7 @@ async def health():
 async def metrics():
     """Prometheus metrics endpoint."""
     from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 

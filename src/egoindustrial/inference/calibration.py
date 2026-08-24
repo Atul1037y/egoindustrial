@@ -39,18 +39,18 @@ class CalibrationDataset(Dataset):
                     for b in range(pathway.shape[0]):
                         if count >= self.max_samples:
                             break
-                        self._data.append({
-                            self.input_names[i]: pathway[b:b+1].numpy().astype(np.float32)
-                        })
+                        self._data.append(
+                            {self.input_names[i]: pathway[b : b + 1].numpy().astype(np.float32)}
+                        )
                         count += 1
             else:
                 # Standard: single video tensor [B, C, T, H, W]
                 for b in range(batch["video"].shape[0]):
                     if count >= self.max_samples:
                         break
-                    self._data.append({
-                        self.input_names[0]: batch["video"][b:b+1].numpy().astype(np.float32)
-                    })
+                    self._data.append(
+                        {self.input_names[0]: batch["video"][b : b + 1].numpy().astype(np.float32)}
+                    )
                     count += 1
 
         print(f"Prepared {len(self._data)} calibration samples")
@@ -79,6 +79,7 @@ def get_calibration_dataloader(
 
     # Build dataloader (no domain mixing for calibration)
     from egoindustrial.data.unified_dataloader import ConcatDatasetWithDomain
+
     concat_dataset = ConcatDatasetWithDomain(datasets)
 
     return DataLoader(
@@ -152,7 +153,6 @@ class TensorRTCalibrationDataset:
 if __name__ == "__main__":
     import argparse
 
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, required=True, help="Hydra config path")
     parser.add_argument("--output", type=str, default="calibration_data")
@@ -162,6 +162,7 @@ if __name__ == "__main__":
 
     # Load config
     from omegaconf import OmegaConf
+
     cfg = OmegaConf.load(args.config)
 
     generate_calibration_data(

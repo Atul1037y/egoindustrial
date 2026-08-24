@@ -1,6 +1,5 @@
 """Export LightningModule to ONNX format."""
 
-
 import torch
 from omegaconf import DictConfig
 
@@ -43,9 +42,7 @@ def export_to_onnx(
     # Prepare dummy input
     if isinstance(input_shape[0], list):
         # SlowFast: [slow_pathway, fast_pathway]
-        dummy_input = [
-            torch.randn(*shape) for shape in input_shape
-        ]
+        dummy_input = [torch.randn(*shape) for shape in input_shape]
         input_names = ["slow_pathway", "fast_pathway"]
     else:
         dummy_input = torch.randn(*input_shape)

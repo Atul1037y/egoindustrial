@@ -7,16 +7,20 @@ from torchmetrics.classification import (
 )
 
 
-def get_metrics(num_verb: int, num_noun: int, num_action: int, prefix: str = "") -> MetricCollection:
+def get_metrics(
+    num_verb: int, num_noun: int, num_action: int, prefix: str = ""
+) -> MetricCollection:
     """Get metric collection for verb/noun/action."""
-    return MetricCollection({
-        f"{prefix}verb_top1": MulticlassAccuracy(num_classes=num_verb, top_k=1),
-        f"{prefix}verb_top5": MulticlassAccuracy(num_classes=num_verb, top_k=5),
-        f"{prefix}noun_top1": MulticlassAccuracy(num_classes=num_noun, top_k=1),
-        f"{prefix}noun_top5": MulticlassAccuracy(num_classes=num_noun, top_k=5),
-        f"{prefix}action_top1": MulticlassAccuracy(num_classes=num_action, top_k=1),
-        f"{prefix}action_top5": MulticlassAccuracy(num_classes=num_action, top_k=5),
-    })
+    return MetricCollection(
+        {
+            f"{prefix}verb_top1": MulticlassAccuracy(num_classes=num_verb, top_k=1),
+            f"{prefix}verb_top5": MulticlassAccuracy(num_classes=num_verb, top_k=5),
+            f"{prefix}noun_top1": MulticlassAccuracy(num_classes=num_noun, top_k=1),
+            f"{prefix}noun_top5": MulticlassAccuracy(num_classes=num_noun, top_k=5),
+            f"{prefix}action_top1": MulticlassAccuracy(num_classes=num_action, top_k=1),
+            f"{prefix}action_top5": MulticlassAccuracy(num_classes=num_action, top_k=5),
+        }
+    )
 
 
 def compute_per_class_accuracy(

@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 try:
     import pycuda.driver as cuda
     import tensorrt as trt
+
     HAS_TENSORRT = True
 except ImportError:
     HAS_TENSORRT = False
@@ -83,9 +84,12 @@ class TensorRTEngine:
 
         self.stream.synchronize()
 
-        return [out["host"].reshape(self.engine.get_binding_shape(b)) for b, out in zip(
-            [b for b in self.engine if not self.engine.binding_is_input(b)], self.outputs
-        )]
+        return [
+            out["host"].reshape(self.engine.get_binding_shape(b))
+            for b, out in zip(
+                [b for b in self.engine if not self.engine.binding_is_input(b)], self.outputs
+            )
+        ]
 
     def infer_torch(self, *inputs: torch.Tensor) -> list[torch.Tensor]:
         """Run inference with torch tensors."""
@@ -95,6 +99,7 @@ class TensorRTEngine:
 
 
 if HAS_TENSORRT:
+
     class CalibrationDataset:
         """Calibration dataset for INT8 quantization."""
 
@@ -123,7 +128,6 @@ if HAS_TENSORRT:
 
         def __len__(self):
             return min(self.max_batches, len(self.dataloader))
-
 
     class Int8Calibrator(trt.IInt8EntropyCalibrator2):
         """INT8 entropy calibrator."""
@@ -259,6 +263,7 @@ def benchmark_engine(
 
     # Benchmark
     import time
+
     times = []
     for _ in range(num_runs):
         start = time.perf_counter()
@@ -292,7 +297,11 @@ if __name__ == "__main__":
 
     # Example input shapes for VideoMAE: [B, C, T, H, W]
     input_shapes = {
-        "video": ([1, 3, 16, 224, 224], [args.max_batch, 3, 16, 224, 224], [args.max_batch, 3, 16, 224, 224])
+        "video": (
+            [1, 3, 16, 224, 224],
+            [args.max_batch, 3, 16, 224, 224],
+            [args.max_batch, 3, 16, 224, 224],
+        )
     }
 
     build_tensorrt_engine(
