@@ -1,5 +1,6 @@
 # Training image with CUDA support - use PyTorch base image
-FROM pytorch/pytorch:2.12.0-cuda12.6-cudnn9-devel
+# Use --platform=linux/amd64 for AMD64 builds on ARM64 (Apple Silicon)
+FROM --platform=linux/amd64 pytorch/pytorch:2.12.0-cuda12.6-cudnn9-devel
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
