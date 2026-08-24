@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pandas as pd
+
 from egoindustrial.weak_supervision.ui.state import SessionState
 
 
@@ -28,7 +29,7 @@ def export_for_training(
     output_dir: str = "data/weak_supervision",
     split_ratio: float = 0.8,
     seed: int = 42,
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Export in training-ready format with train/val split."""
     df = state.get_verified_dataframe()
 

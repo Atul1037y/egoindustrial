@@ -25,7 +25,7 @@ def train(cfg: DictConfig) -> None:
     seed_everything(cfg.seed, workers=True)
 
     # Data
-    transforms = get_transforms(cfg.dataset.get("transforms", {}))
+    _ = get_transforms(cfg.dataset.get("transforms", {}))
     datasets = build_datasets(cfg.dataset)
     train_loader = build_dataloader(
         datasets,

@@ -5,20 +5,20 @@ __author__ = "Your Name"
 __email__ = "your.email@example.com"
 
 from egoindustrial.data import (
-    EpicKitchensDataset,
     Assembly101Dataset,
+    EpicKitchensDataset,
     HoloAssistDataset,
     UnifiedDataLoader,
 )
+from egoindustrial.inference import FastAPIServer, TensorRTEngine
 from egoindustrial.models import (
-    VideoMAEv2,
+    InternVideo2,
     MViTv2,
     SlowFast,
-    InternVideo2,
+    VideoMAEv2,
     get_model,
 )
 from egoindustrial.training import EgoIndustrialModule
-from egoindustrial.inference import TensorRTEngine, FastAPIServer
 
 __all__ = [
     "EpicKitchensDataset",

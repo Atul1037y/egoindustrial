@@ -2,6 +2,7 @@
 
 
 import streamlit as st
+
 from egoindustrial.weak_supervision.ui.components import (
     label_editor,
     stats_panel,
