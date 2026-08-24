@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.venv/
+venv/
+env/
+
+# PyTorch / ML
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.engine
+*.trt
+lightning_logs/
+wandb/
+runs/
+checkpoints/
+
+# Hydra
+.outputs/
+.multirun/
+
+# Data
+data/
+datasets/
+*.csv
+*.parquet
+*.pkl
+*.pickle
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+
+# Model weights (large files)
+models/weights/

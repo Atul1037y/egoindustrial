@@ -1,0 +1,28 @@
+# @package _global_
+defaults:
+  - dataset: mixture
+  - model: videomaev2
+  - train: default
+  - inference: server
+  - _self_
+
+# Global settings
+seed: 42
+num_gpus: 1
+num_workers: 8
+precision: "16-mixed"
+debug: false
+
+# Paths
+paths:
+  data_root: ${oc.env:DATA_ROOT,/data}
+  output_root: ${oc.env:OUTPUT_ROOT,./outputs}
+  checkpoint_dir: ${paths.output_root}/checkpoints
+  log_dir: ${paths.output_root}/logs
+
+# Wandb
+wandb:
+  project: "egoindustrial"
+  entity: null
+  tags: []
+  mode: "online"  # online, offline, disabled

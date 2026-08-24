@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "egoindustrial"
+version = "0.1.0"
+description = "Scalable Egocentric Action Recognition Pipeline"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.1",
+    "torchvision>=0.16",
+    "pytorch-lightning>=2.1",
+    "hydra-core>=1.3",
+    "omegaconf>=2.3",
+    "wandb>=0.16",
+    "timm>=0.9",
+    "transformers>=4.35",
+    "decord>=0.6",
+    "albumentations>=1.3",
+    "pandas>=2.1",
+    "numpy>=1.24",
+    "onnx>=1.15",
+    "onnxruntime>=1.16",
+    "fastapi>=0.104",
+    "uvicorn>=0.24",
+    "prometheus-client>=0.19",
+    "streamlit>=1.28",
+    "opencv-python>=4.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.1",
+    "mypy>=1.7",
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "pre-commit>=3.5",
+]
+inference = [
+    "tensorrt>=8.6",
+    "onnxsim>=0.4",
+]
+all = ["dev", "inference"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["egoindustrial*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "I", "UP", "W"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "--cov=src/egoindustrial --cov-report=term-missing"
+
+[tool.pytest_coverage]
+branch = true
+
+[tool.pre-commit]
+repos = [
+    {repo = "https://github.com/astral-sh/ruff-pre-commit", rev = "v0.1.0", hooks = [{id = "ruff"}, {id = "ruff-format"}]},
+    {repo = "https://github.com/pre-commit/mirrors-mypy", rev = "v1.7.0", hooks = [{id = "mypy"}]},
+]
