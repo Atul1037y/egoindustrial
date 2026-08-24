@@ -1,0 +1,69 @@
+# Cloud Build configuration for EgoIndustrial
+# Trigger: push to main branch or tag
+# Usage: gcloud builds submit --config cloudbuild.yaml .
+
+steps:
+  # Build training image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-train'
+    args: [
+      'build',
+      '-f', 'docker/Dockerfile.train',
+      '-t', 'gcr.io/$PROJECT_ID/egoindustrial-train:$SHORT_SHA',
+      '-t', 'gcr.io/$PROJECT_ID/egoindustrial-train:latest',
+      '--cache-from=gcr.io/$PROJECT_ID/egoindustrial-train:latest',
+      '.'
+    ]
+
+  # Build inference image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-inference'
+    args: [
+      'build',
+      '-f', 'docker/Dockerfile.inference',
+      '-t', 'gcr.io/$PROJECT_ID/egoindustrial-inference:$SHORT_SHA',
+      '-t', 'gcr.io/$PROJECT_ID/egoindustrial-inference:latest',
+      '--cache-from=gcr.io/$PROJECT_ID/egoindustrial-inference:latest',
+      '.'
+    ]
+
+  # Push images
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-train'
+    args: ['push', 'gcr.io/$PROJECT_ID/egoindustrial-train:$SHORT_SHA']
+    waitFor: ['build-train']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-inference'
+    args: ['push', 'gcr.io/$PROJECT_ID/egoindustrial-inference:$SHORT_SHA']
+    waitFor: ['build-inference']
+
+  # Deploy to Cloud Run (optional - can be triggered manually)
+  # - name: 'gcr.io/cloud-builders/gcloud'
+  #   id: 'deploy-inference'
+  #   args: [
+  #     'run', 'deploy', 'egoindustrial-inference',
+  #     '--image', 'gcr.io/$PROJECT_ID/egoindustrial-inference:$SHORT_SHA',
+  #     '--region', 'us-central1',
+  #     '--platform', 'managed',
+  #     '--allow-unauthenticated',
+  #     '--port', '8000',
+  #     '--cpu', '4',
+  #     '--memory', '16Gi',
+  #     '--gpu', '1',
+  #     '--gpu-type', 'nvidia-tesla-t4',
+  #   ]
+  #   waitFor: ['push-inference']
+
+# Build options
+options:
+  machineType: 'E2_HIGHCPU_32'
+  logging: CLOUD_LOGGING_ONLY
+
+# Substitutions
+substitutions:
+  _REGION: 'us-central1'
+  _SERVICE_NAME: 'egoindustrial-inference'
+
+# Timeout
+timeout: '3600s'
