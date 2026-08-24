@@ -1,0 +1,13 @@
+# @package _global_
+
+port: 8501
+host: 0.0.0.0
+
+# Label maps (auto-populated from data)
+verb_classes: []  # Will be loaded from class_maps.yaml
+noun_classes: []
+
+# UI settings
+max_labels_per_page: 50
+show_confidence: true
+allow_corrections: true

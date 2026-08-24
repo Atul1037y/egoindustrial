@@ -1,0 +1,26 @@
+# @package _global_
+
+engine_path: ${paths.output_root}/model_int8.engine
+checkpoint_path: ${paths.checkpoint_dir}/best.ckpt
+
+input_dir: ${paths.data_root}/unlabeled_videos
+output_dir: ${paths.output_root}/pseudo_labels
+
+confidence_threshold: 0.9
+entropy_threshold: 0.5
+min_frames: 16
+stride: 8
+
+# Filtering
+filter:
+  verb_conf_threshold: 0.9
+  noun_conf_threshold: 0.9
+  action_conf_threshold: 0.8
+  verb_entropy_threshold: 0.5
+  noun_entropy_threshold: 0.5
+  min_duration_frames: 8
+  max_duration_frames: 100
+  iou_threshold: 0.5
+  apply_nms: true
+  balance_classes: true
+  max_per_class: 1000
