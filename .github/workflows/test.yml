@@ -34,6 +34,7 @@ jobs:
         run: |
           pip list | grep egoindustrial
           python -c "import sys; print(sys.path)"
+          ls -la /home/runner/work/egoindustrial/egoindustrial/src/egoindustrial/
 
       - name: Verify package import
         run: |
