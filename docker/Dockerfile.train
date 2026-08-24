@@ -1,19 +1,21 @@
 # Training image with CUDA support - use PyTorch base image
-FROM pytorch/pytorch:2.3.0-cuda12.1-cudnn9-devel
+# Build for AMD64 target (GPU servers)
+FROM --platform=linux/amd64 pytorch/pytorch:2.12.0-cuda12.6-cudnn9-devel
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    PIP_BREAK_SYSTEM_PACKAGES=1
 
-# Install system dependencies
+# Install system dependencies (Ubuntu 24.04 noble)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git wget curl ca-certificates \
-    libglib2.0-0 libsm6 libxext6 libxrender-dev libgl1-mesa-glx \
+    libglib2.0-0 libsm6 libxext6 libxrender-dev libgl1 \
     ffmpeg libavcodec-extra \
     && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip
-RUN pip install --upgrade pip setuptools wheel
+RUN pip install --upgrade pip setuptools wheel --break-system-packages
 
 # Copy project
 WORKDIR /app
@@ -22,9 +24,9 @@ COPY src/ ./src/
 COPY configs/ ./configs/
 
 # Install package with dev dependencies
-RUN pip install -e ".[dev]"
+RUN pip install -e ".[dev]" --break-system-packages
 
 # Install TensorRT (optional, for export)
-# RUN pip install tensorrt --index-url https://pypi.ngc.nvidia.com
+# RUN pip install tensorrt --index-url https://pypi.ngc.nvidia.com --break-system-packages
 
 ENTRYPOINT ["python", "-m", "egoindustrial.training.train"]
