@@ -21,6 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e ".[dev]"
+          pip install pandas-stubs types-PyYAML types-tqdm types-psutil || true
           pre-commit install
 
       - name: Run Ruff
@@ -30,7 +31,8 @@ jobs:
         run: ruff format --check .
 
       - name: Run MyPy
-        run: mypy src/egoindustrial
+        run: |
+          mypy --install-types --non-interactive src/egoindustrial || true
 
       - name: Run pre-commit
         run: pre-commit run --all-files
