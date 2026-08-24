@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  train:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.train
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - WANDB_API_KEY=${WANDB_API_KEY}
+      - DATA_ROOT=/data
+      - OUTPUT_ROOT=/outputs
+    volumes:
+      - ${DATA_ROOT}:/data:ro
+      - ${OUTPUT_ROOT}:/outputs
+      - ./configs:/app/configs:ro
+      - ./notebooks:/app/notebooks
+    working_dir: /app
+    command: ["python", "-m", "egoindustrial.training.train"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  inference:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.inference
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    ports:
+      - "8000:8000"
+      - "9090:9090"
+    volumes:
+      - ${OUTPUT_ROOT}:/outputs:ro
+    working_dir: /app
+    command: ["python", "-m", "egoindustrial.inference.server", "/outputs/model_int8.engine"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources:ro

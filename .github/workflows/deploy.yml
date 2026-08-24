@@ -1,0 +1,65 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Deployment target"
+        required: true
+        type: choice
+        options: [modal, gcp-cloud-run]
+      environment:
+        description: "Environment"
+        required: true
+        type: choice
+        options: [staging, production]
+
+jobs:
+  deploy-modal:
+    if: github.event.inputs.target == 'modal'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Modal
+        run: pip install modal
+
+      - name: Deploy to Modal
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+        run: |
+          modal deploy scripts/deploy_modal.py --env ${{ github.event.inputs.environment }}
+
+  deploy-gcp:
+    if: github.event.inputs.target == 'gcp-cloud-run'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy egoindustrial-inference \
+            --image ${{ env.REGISTRY }}/${{ github.repository }}-inference:latest \
+            --region us-central1 \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8000 \
+            --cpu 4 --memory 16Gi \
+            --gpu 1 --gpu-type nvidia-tesla-t4

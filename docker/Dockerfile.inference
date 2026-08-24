@@ -1,0 +1,47 @@
+# Inference image with TensorRT
+FROM nvidia/cuda:12.1-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 python3.11-venv python3.11-dev \
+    git wget curl ca-certificates \
+    libglib2.0-0 libsm6 libxext6 libxrender-dev libgl1-mesa-glx \
+    ffmpeg libavcodec-extra \
+    tensorrt libnvinfer8 libnvinfer-plugin8 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create venv
+RUN python3.11 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip
+RUN pip install --upgrade pip setuptools wheel
+
+# Copy project
+WORKDIR /app
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
+COPY configs/ ./configs/
+
+# Install package with inference dependencies
+RUN pip install -e ".[inference]"
+
+# Install PyTorch with CUDA
+RUN pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+# Install TensorRT Python bindings
+RUN pip install tensorrt --index-url https://pypi.ngc.nvidia.com
+
+# Expose ports
+EXPOSE 8000 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+ENTRYPOINT ["python", "-m", "egoindustrial.inference.server"]
+CMD ["--help"]
