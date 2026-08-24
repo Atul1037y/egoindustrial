@@ -27,12 +27,7 @@ checkpoints/
 .outputs/
 .multirun/
 
-# Data
-datasets/
-*.csv
-*.parquet
-*.pkl
-*.pickle add
+
 
 # IDE
 .idea/
