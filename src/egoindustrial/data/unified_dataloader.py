@@ -5,9 +5,9 @@ from typing import Any
 import torch
 from torch.utils.data import DataLoader, Dataset, Sampler
 
+from egoindustrial.data.assembly101 import Assembly101Dataset
 from egoindustrial.data.base_dataset import BaseEgocentricDataset
 from egoindustrial.data.epic_kitchens import EpicKitchensDataset
-from egoindustrial.data.assembly101 import Assembly101Dataset
 from egoindustrial.data.holoassist import HoloAssistDataset
 
 
