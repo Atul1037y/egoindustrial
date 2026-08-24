@@ -1,9 +1,14 @@
 """MViTv2 model wrapper."""
 
-
 import torch
 import torch.nn as nn
-from timm.models.mvit import mvit_base_16x4
+
+try:
+    from timm.models.mvit import mvit_base_16x4
+    HAS_TIMM_MVIT = True
+except ImportError:
+    HAS_TIMM_MVIT = False
+    mvit_base_16x4 = None
 
 from egoindustrial.models.head import MultiTaskHead
 from egoindustrial.models.registry import register_model
@@ -23,6 +28,13 @@ class MViTv2(nn.Module):
         freeze_backbone: bool = False,
     ):
         super().__init__()
+
+        if not HAS_TIMM_MVIT:
+            raise ImportError(
+                "MViTv2 requires timm with mvit support. "
+                "Install with: pip install 'timm>=0.9' or use a different model."
+            )
+
         self.backbone = mvit_base_16x4(pretrained=pretrained)
         embed_dim = self.backbone.head.in_features
 

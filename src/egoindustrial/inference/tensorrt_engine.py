@@ -1,20 +1,39 @@
 """TensorRT engine builder with INT8 calibration support."""
 
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
-import pycuda.driver as cuda
-import tensorrt as trt
 import torch
 
-TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
+if TYPE_CHECKING:
+    import pycuda.driver as cuda
+    import tensorrt as trt
+
+try:
+    import pycuda.driver as cuda
+    import tensorrt as trt
+    HAS_TENSORRT = True
+except ImportError:
+    HAS_TENSORRT = False
+    cuda = None
+    trt = None
+
+if HAS_TENSORRT:
+    TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
+else:
+    TRT_LOGGER = None
 
 
 class TensorRTEngine:
     """TensorRT engine wrapper for inference."""
 
     def __init__(self, engine_path: str):
+        if not HAS_TENSORRT:
+            raise ImportError(
+                "TensorRTEngine requires tensorrt and pycuda. "
+                "Install with: pip install tensorrt pycuda"
+            )
         self.engine_path = engine_path
         self.logger = TRT_LOGGER
         self.runtime = trt.Runtime(self.logger)
@@ -28,7 +47,7 @@ class TensorRTEngine:
         self.bindings = []
         self._allocate_buffers()
 
-    def _load_engine(self) -> trt.ICudaEngine:
+    def _load_engine(self) -> "trt.ICudaEngine":
         with open(self.engine_path, "rb") as f:
             engine_data = f.read()
         return self.runtime.deserialize_cuda_engine(engine_data)
@@ -75,73 +94,74 @@ class TensorRTEngine:
         return [torch.from_numpy(o) for o in np_outputs]
 
 
-class CalibrationDataset:
-    """Calibration dataset for INT8 quantization."""
+if HAS_TENSORRT:
+    class CalibrationDataset:
+        """Calibration dataset for INT8 quantization."""
 
-    def __init__(self, dataloader, max_batches: int = 100):
-        self.dataloader = dataloader
-        self.max_batches = max_batches
-        self.batch_idx = 0
+        def __init__(self, dataloader, max_batches: int = 100):
+            self.dataloader = dataloader
+            self.max_batches = max_batches
+            self.batch_idx = 0
 
-    def __iter__(self):
-        self.batch_idx = 0
-        return self
+        def __iter__(self):
+            self.batch_idx = 0
+            return self
 
-    def __next__(self):
-        if self.batch_idx >= self.max_batches:
-            raise StopIteration
-        try:
-            batch = next(self.dataloader)
-        except StopIteration:
-            raise StopIteration
-        self.batch_idx += 1
+        def __next__(self):
+            if self.batch_idx >= self.max_batches:
+                raise StopIteration
+            try:
+                batch = next(self.dataloader)
+            except StopIteration:
+                raise StopIteration
+            self.batch_idx += 1
 
-        # Return inputs as list of numpy arrays
-        if isinstance(batch["video"], list):
-            return [v.numpy().astype(np.float32) for v in batch["video"]]
-        return [batch["video"].numpy().astype(np.float32)]
+            # Return inputs as list of numpy arrays
+            if isinstance(batch["video"], list):
+                return [v.numpy().astype(np.float32) for v in batch["video"]]
+            return [batch["video"].numpy().astype(np.float32)]
 
-    def __len__(self):
-        return min(self.max_batches, len(self.dataloader))
+        def __len__(self):
+            return min(self.max_batches, len(self.dataloader))
 
 
-class Int8Calibrator(trt.IInt8EntropyCalibrator2):
-    """INT8 entropy calibrator."""
+    class Int8Calibrator(trt.IInt8EntropyCalibrator2):
+        """INT8 entropy calibrator."""
 
-    def __init__(self, calibration_dataset: CalibrationDataset, cache_file: str = ""):
-        trt.IInt8EntropyCalibrator2.__init__(self)
-        self.dataset = calibration_dataset
-        self.cache_file = cache_file
-        self.device_input = None
-        self.iterator = iter(calibration_dataset)
+        def __init__(self, calibration_dataset: CalibrationDataset, cache_file: str = ""):
+            trt.IInt8EntropyCalibrator2.__init__(self)
+            self.dataset = calibration_dataset
+            self.cache_file = cache_file
+            self.device_input = None
+            self.iterator = iter(calibration_dataset)
 
-    def get_batch_size(self) -> int:
-        return 1
+        def get_batch_size(self) -> int:
+            return 1
 
-    def get_batch(self, names: list[str], p_str: Any = None) -> list[int]:
-        try:
-            batch = next(self.iterator)
-            if not isinstance(batch, list):
-                batch = [batch]
+        def get_batch(self, names: list[str], p_str: Any = None) -> list[int]:
+            try:
+                batch = next(self.iterator)
+                if not isinstance(batch, list):
+                    batch = [batch]
 
-            if self.device_input is None:
-                self.device_input = cuda.mem_alloc(batch[0].nbytes)
+                if self.device_input is None:
+                    self.device_input = cuda.mem_alloc(batch[0].nbytes)
 
-            cuda.memcpy_htod(self.device_input, batch[0])
-            return [int(self.device_input)]
-        except StopIteration:
+                cuda.memcpy_htod(self.device_input, batch[0])
+                return [int(self.device_input)]
+            except StopIteration:
+                return None
+
+        def read_calibration_cache(self) -> bytes | None:
+            if self.cache_file and os.path.exists(self.cache_file):
+                with open(self.cache_file, "rb") as f:
+                    return f.read()
             return None
 
-    def read_calibration_cache(self) -> bytes | None:
-        if self.cache_file and os.path.exists(self.cache_file):
-            with open(self.cache_file, "rb") as f:
-                return f.read()
-        return None
-
-    def write_calibration_cache(self, cache: bytes):
-        if self.cache_file:
-            with open(self.cache_file, "wb") as f:
-                f.write(cache)
+        def write_calibration_cache(self, cache: bytes):
+            if self.cache_file:
+                with open(self.cache_file, "wb") as f:
+                    f.write(cache)
 
 
 def build_tensorrt_engine(
@@ -169,6 +189,9 @@ def build_tensorrt_engine(
     Returns:
         Path to built engine
     """
+    if not HAS_TENSORRT:
+        raise ImportError("build_tensorrt_engine requires tensorrt and pycuda")
+
     builder = trt.Builder(TRT_LOGGER)
     config = builder.create_builder_config()
     config.max_workspace_size = max_workspace_size
@@ -222,6 +245,9 @@ def benchmark_engine(
     num_runs: int = 100,
 ) -> dict:
     """Benchmark TensorRT engine latency and throughput."""
+    if not HAS_TENSORRT:
+        raise ImportError("benchmark_engine requires tensorrt and pycuda")
+
     engine = TensorRTEngine(engine_path)
 
     # Generate dummy inputs

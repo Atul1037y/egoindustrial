@@ -3,7 +3,13 @@
 
 import torch
 import torch.nn as nn
-from pytorchvideo.models.slowfast import create_slowfast
+
+try:
+    from pytorchvideo.models.slowfast import create_slowfast
+    HAS_PYTORCHVIDEO = True
+except ImportError:
+    HAS_PYTORCHVIDEO = False
+    create_slowfast = None
 
 from egoindustrial.models.head import MultiTaskHead
 from egoindustrial.models.registry import register_model
@@ -27,6 +33,12 @@ class SlowFast(nn.Module):
         super().__init__()
         self.slowfast_alpha = slowfast_alpha
         self.slowfast_beta = slowfast_beta
+
+        if not HAS_PYTORCHVIDEO:
+            raise ImportError(
+                "SlowFast requires pytorchvideo. "
+                "Install with: pip install pytorchvideo or use a different model."
+            )
 
         self.backbone = create_slowfast(
             model_num_class=400,  # Kinetics pretrained

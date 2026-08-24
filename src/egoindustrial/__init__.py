@@ -6,11 +6,11 @@ __email__ = "your.email@example.com"
 
 from egoindustrial.data import (
     Assembly101Dataset,
+    ConcatDatasetWithDomain,
     EpicKitchensDataset,
     HoloAssistDataset,
-    UnifiedDataLoader,
 )
-from egoindustrial.inference import FastAPIServer, TensorRTEngine
+from egoindustrial.inference import TensorRTEngine, create_app, run_server
 from egoindustrial.models import (
     InternVideo2,
     MViTv2,
@@ -24,7 +24,7 @@ __all__ = [
     "EpicKitchensDataset",
     "Assembly101Dataset",
     "HoloAssistDataset",
-    "UnifiedDataLoader",
+    "ConcatDatasetWithDomain",
     "VideoMAEv2",
     "MViTv2",
     "SlowFast",
@@ -32,4 +32,6 @@ __all__ = [
     "get_model",
     "EgoIndustrialModule",
     "TensorRTEngine",
-    "FastAPIServer",]
+    "create_app",
+    "run_server",
+]

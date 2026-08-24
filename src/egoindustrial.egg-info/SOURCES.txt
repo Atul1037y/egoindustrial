@@ -1,8 +1,0 @@
-README.md
-pyproject.toml
-src/egoindustrial/__init__.py
-src/egoindustrial.egg-info/PKG-INFO
-src/egoindustrial.egg-info/SOURCES.txt
-src/egoindustrial.egg-info/dependency_links.txt
-src/egoindustrial.egg-info/requires.txt
-src/egoindustrial.egg-info/top_level.txt

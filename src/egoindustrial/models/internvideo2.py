@@ -1,9 +1,14 @@
 """InternVideo2 model wrapper."""
 
-
 import torch
 import torch.nn as nn
-from transformers import AutoModel
+
+try:
+    from transformers import AutoModel
+    HAS_TRANSFORMERS = True
+except ImportError:
+    HAS_TRANSFORMERS = False
+    AutoModel = None
 
 from egoindustrial.models.head import MultiTaskHead
 from egoindustrial.models.registry import register_model
@@ -24,6 +29,13 @@ class InternVideo2(nn.Module):
         model_name: str = "OpenGVLab/InternVideo2-Stage2_1B-224p-f4",
     ):
         super().__init__()
+
+        if not HAS_TRANSFORMERS:
+            raise ImportError(
+                "InternVideo2 requires transformers. "
+                "Install with: pip install transformers or use a different model."
+            )
+
         self.backbone = AutoModel.from_pretrained(model_name, trust_remote_code=True)
         embed_dim = self.backbone.config.hidden_size
 

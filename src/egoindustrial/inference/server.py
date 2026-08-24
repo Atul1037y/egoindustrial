@@ -7,10 +7,10 @@ from contextlib import asynccontextmanager
 import numpy as np
 import torch
 import uvicorn
-from egoindustrial.inference.metrics import METRICS, setup_metrics
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 
+from egoindustrial.inference.metrics import METRICS, setup_metrics
 from egoindustrial.inference.models import (
     BatchInferenceRequest,
     BatchInferenceResponse,
