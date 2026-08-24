@@ -54,4 +54,4 @@ docker-compose.override.yml
 logs/
 
 # Model weights (large files)
-models/weights/
+models/weights/*.egg-info/
