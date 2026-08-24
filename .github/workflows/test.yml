@@ -35,6 +35,8 @@ jobs:
           pip list | grep egoindustrial
           python -c "import sys; print(sys.path)"
           ls -la /home/runner/work/egoindustrial/egoindustrial/src/egoindustrial/
+          python -c "import os; print(os.getcwd()); print(os.listdir('.'))"
+          python -c "import sys; sys.path.insert(0, '/home/runner/work/egoindustrial/egoindustrial/src'); import egoindustrial.data; print('Direct import works')"
 
       - name: Verify package import
         run: |
