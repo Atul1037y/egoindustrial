@@ -1,0 +1,9 @@
+# @package _global_
+_target_: egoindustrial.models.internvideo2.InternVideo2
+num_verb_classes: 97
+num_noun_classes: 300
+num_action_classes: 3806
+pretrained: true
+dropout: 0.5
+freeze_backbone: false
+model_name: "OpenGVLab/InternVideo2-Stage2_1B-224p-f4"

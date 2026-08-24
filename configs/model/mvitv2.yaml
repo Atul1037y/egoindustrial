@@ -1,0 +1,8 @@
+# @package _global_
+_target_: egoindustrial.models.mvitv2.MViTv2
+num_verb_classes: 97
+num_noun_classes: 300
+num_action_classes: 3806
+pretrained: true
+dropout: 0.5
+freeze_backbone: false
