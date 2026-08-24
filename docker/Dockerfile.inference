@@ -1,6 +1,5 @@
 # Inference image with TensorRT - use PyTorch base image with CUDA
-# Build for AMD64 target (GPU servers)
-FROM --platform=linux/amd64 pytorch/pytorch:2.12.0-cuda12.6-cudnn9-runtime
+FROM pytorch/pytorch:2.12.0-cuda12.6-cudnn9-runtime
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
