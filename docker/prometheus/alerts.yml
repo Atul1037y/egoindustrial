@@ -1,0 +1,190 @@
+groups:
+  - name: egoindustrial.rules
+    rules:
+      # Service Health
+      - alert: ServiceDown
+        expr: up{job="egoindustrial"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "EgoIndustrial service is down"
+          description: "Service has been down for more than 1 minute"
+
+      - alert: HealthCheckFailing
+        expr: probe_http_status{job="egoindustrial-health"} != 200
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Health check failing"
+          description: "Health endpoint returning non-200 status"
+
+      # Performance
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(egoindustrial_request_latency_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High inference latency (P95 > 500ms)"
+          description: "P95 latency is {{ $value }}s"
+
+      - alert: VeryHighLatency
+        expr: histogram_quantile(0.99, rate(egoindustrial_request_latency_seconds_bucket[5m])) > 1.0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Very high inference latency (P99 > 1s)"
+          description: "P99 latency is {{ $value }}s"
+
+      - alert: LowThroughput
+        expr: rate(egoindustrial_requests_total[5m]) < 10
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low request throughput (< 10 req/s)"
+          description: "Only {{ $value }} req/s over last 5 minutes"
+
+      # Batch Processing
+      - alert: SmallBatchSize
+        expr: histogram_quantile(0.5, rate(egoindustrial_batch_size[5m])) < 4
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "Small batch sizes detected"
+          description: "Median batch size is {{ $value }}, consider increasing concurrency"
+
+      # GPU/Resource
+      - alert: GPUMemoryHigh
+        expr: egoindustrial_gpu_memory_used_bytes / egoindustrial_gpu_memory_total_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPU memory usage > 90%"
+          description: "GPU memory at {{ $value | humanizePercentage }}"
+
+      - alert: GPUMemoryCritical
+        expr: egoindustrial_gpu_memory_used_bytes / egoindustrial_gpu_memory_total_bytes > 0.97
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "GPU memory critical (> 97%)"
+          description: "Immediate action required, OOM risk"
+
+      - alert: CPUHigh
+        expr: egoindustrial_cpu_usage_percent > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU at {{ $value }}%"
+
+      - alert: MemoryHigh
+        expr: egoindustrial_memory_usage_bytes / (egoindustrial_memory_usage_bytes + 1e9) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "System memory > 90%"
+          description: "System memory at {{ $value | humanizePercentage }}"
+
+      # Model Quality
+      - alert: ModelDriftDetected
+        expr: egoindustrial_drift_score > 0.15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Data drift detected"
+          description: "Drift score is {{ $value }}, threshold is 0.15"
+
+      - alert: ModelDriftCritical
+        expr: egoindustrial_drift_score > 0.3
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical data drift"
+          description: "Drift score {{ $value }} exceeds critical threshold 0.3"
+
+      - alert: PerformanceDrop
+        expr: egoindustrial_performance_drop > 0.02
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Model performance dropped"
+          description: "Performance dropped by {{ $value | humanizePercentage }}"
+
+      - alert: PerformanceDropCritical
+        expr: egoindustrial_performance_drop > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical performance drop"
+          description: "Performance dropped by {{ $value | humanizePercentage }}, retraining needed"
+
+      - alert: RetrainTriggered
+        expr: increase(egoindustrial_retrain_triggered_total[1h]) > 0
+        for: 0m
+        labels:
+          severity: info
+        annotations:
+          summary: "Automated retraining triggered"
+          description: "Automated retraining pipeline was triggered"
+
+      - alert: RetrainFailed
+        expr: increase(egoindustrial_retrain_failed_total[1h]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Retraining failed"
+          description: "Automated retraining pipeline failed"
+
+      # Inference Errors
+      - alert: HighInferenceErrors
+        expr: rate(egoindustrial_inference_errors_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High inference error rate"
+          description: "Error rate is {{ $value }} errors/sec"
+
+      - alert: InferenceErrorSpike
+        expr: rate(egoindustrial_inference_errors_total[1m]) > 1
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Inference error spike"
+          description: "{{ $value }} errors/sec in last minute"
+
+      # Batch Size
+      - alert: BatchSizeTooSmall
+        expr: histogram_quantile(0.5, rate(egoindustrial_batch_size[5m])) < 2
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "Batch size very small"
+          description: "Median batch size is {{ $value }}, consider increasing concurrency"
+
+      # Model Load Time
+      - alert: ModelLoadTimeHigh
+        expr: histogram_quantile(0.95, rate(egoindustrial_model_load_seconds[5m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Model load time high"
+          description: "P95 model load time is {{ $value }}s"
